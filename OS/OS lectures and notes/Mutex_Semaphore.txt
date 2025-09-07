@@ -1,0 +1,299 @@
+Bounded Buffer
+____________________________________________________
+#include <stdio.h>
+#include <unistd.h>
+#include <pthread.h>
+#include <semaphore.h>
+#include <stdlib.h>
+
+#define BUFFER_SIZE 10
+
+int buffer[BUFFER_SIZE];
+int out[BUFFER_SIZE];
+
+sem_t empty, full;
+pthread_mutex_t mutex;
+
+void *prod(void *arg)
+{
+    sem_wait(&empty); // Wait for empty buffer
+    pthread_mutex_lock(&mutex);
+    for (int i = 0; i < BUFFER_SIZE; i++)
+    {
+        buffer[i] = rand() % 100;
+    }
+    pthread_mutex_unlock(&mutex);
+    sem_post(&full); // Signal buffer full
+    pthread_exit(NULL);
+}
+
+void *cons(void *arg)
+{
+    sem_wait(&full); // Wait for full buffer
+    pthread_mutex_lock(&mutex);
+    for (int i = 0; i < BUFFER_SIZE; i++)
+    {
+        out[i] = buffer[i];
+        printf("%d ", out[i]);
+    }
+    printf("\n");
+    pthread_mutex_unlock(&mutex);
+    sem_post(&empty); // Signal buffer empty
+    pthread_exit(NULL);
+}
+
+int main()
+{
+    srand(time(NULL));
+    pthread_mutex_init(&mutex, NULL);
+    sem_init(&empty, 0, BUFFER_SIZE); // Initialize empty semaphore with buffer size
+    sem_init(&full, 0, 0);            // Initialize full semaphore with 0
+
+    pthread_t p[5], c[5];
+
+    for (int i = 0; i < 5; i++)
+    {
+        pthread_create(&p[i], NULL, prod, NULL);
+    }
+
+    for (int i = 0; i < 5; i++)
+    {
+        pthread_create(&c[i], NULL, cons, NULL);
+    }
+
+    for (int i = 0; i < 5; i++)
+    {
+        pthread_join(c[i], NULL);
+    }
+
+    for (int i = 0; i < 5; i++)
+    {
+        pthread_join(p[i], NULL);
+    }
+
+    pthread_mutex_destroy(&mutex);
+    sem_destroy(&full);
+    sem_destroy(&empty);
+
+    return 0;
+}
+
+//keep track of in and out for efficiency in = (in + 1) % BUFFER_SIZE; out = (out + 1) % BUFFER_SIZE;
+_____________________________________________________________________________________
+Reader-Writer
+_____________________________________________________________________________________
+
+#include <stdio.h>
+#include <unistd.h>
+#include <pthread.h>
+#include <semaphore.h>
+#include <stdlib.h>
+#include <fcntl.h>
+
+#define BUFFER_SIZE 10
+
+int buff[BUFFER_SIZE];
+int buffer[BUFFER_SIZE];
+int out[BUFFER_SIZE];
+
+int rc = 0;
+
+sem_t writer, reader;
+pthread_mutex_t mutex;
+
+FILE *file;
+
+void *prod(void *arg)
+{
+    sem_wait(&writer);
+    for (int i = 0; i < BUFFER_SIZE; i++)
+    {
+        buffer[i] = rand() % 100;
+        fprintf(file, " %d ", buffer[i]);
+        printf("Writer wrote %d to file ", buffer[i]);
+    }
+    sem_post(&writer);
+    pthread_exit(NULL);
+}
+
+void *cons(void *arg)
+{
+    sem_wait(&reader);
+
+    pthread_mutex_lock(&mutex);
+    rc++;
+    if (rc == 1)
+    {
+        sem_wait(&writer); // Reader reading so writer waits
+    }
+    pthread_mutex_unlock(&mutex);
+
+    fseek(file, 0, SEEK_SET);
+    for (int i = 0; i < BUFFER_SIZE; i++)
+    {
+        fscanf(file, "%d", &buff[i]);
+        printf("Reader read %d from file\n", buff[i]);
+    }
+
+    for (int i = 0; i < BUFFER_SIZE; i++)
+    {
+        printf("%d ", buff[i]);
+    }
+    printf("\n");
+
+    sem_post(&reader);
+
+    pthread_mutex_lock(&mutex);
+    rc--;
+    if (rc == 0)
+    {
+        sem_post(&writer);
+    }
+    pthread_mutex_unlock(&mutex);
+    sleep(1);
+    pthread_exit(NULL);
+}
+
+int main()
+{
+    srand(time(NULL));
+    pthread_mutex_init(&mutex, NULL);
+    sem_init(&writer, 0, 1); // Initialize empty semaphore with buffer size
+    sem_init(&reader, 0, 1); // Initialize full semaphore with 0
+
+    file = fopen("shared_file.txt", "r");
+    if (file == NULL) 
+    {
+        perror("Error opening file");
+        exit(EXIT_FAILURE);
+    }
+
+    pthread_t p[2], c[5];
+
+    for (int i = 0; i < 2; i++)
+    {
+        pthread_create(&p[i], NULL, prod, NULL);
+    }
+
+    for (int i = 0; i < 5; i++)
+    {
+        pthread_create(&c[i], NULL, cons, NULL);
+    }
+
+    for (int i = 0; i < 5; i++)
+    {
+        pthread_join(c[i], NULL);
+    }
+
+    for (int i = 0; i < 2; i++)
+    {
+        pthread_join(p[i], NULL);
+    }
+
+    pthread_mutex_destroy(&mutex);
+    sem_destroy(&reader);
+    sem_destroy(&writer);
+    fclose(file);
+    return 0;
+}
+_______________________________________________________________
+Parking
+_______________________________________________________________
+#include <stdio.h>
+#include <pthread.h>
+#include <semaphore.h>
+#include <unistd.h>
+
+#define MAX_CAPACITY 5 // Maximum capacity of the parking lot
+
+sem_t parking_sem; // Semaphore to control access to parking spots
+
+void *car_enter(void *car_id)
+{
+    int id = *(int *)car_id;
+    
+    printf("Car %d wants to enter the parking lot.\n", id);
+    sem_wait(&parking_sem); // Attempt to acquire a parking spot
+    printf("Car %d entered the parking lot.\n", id);
+
+    // Simulate car staying in the parking lot for some time
+    sleep(2);
+
+    printf("Car %d is leaving the parking lot.\n", id);
+    sem_post(&parking_sem); // Release the parking spot
+    pthread_exit(NULL);
+}
+
+int main()
+{
+    pthread_t threads[MAX_CAPACITY];
+    int car_ids[MAX_CAPACITY];
+
+    sem_init(&parking_sem, 0, MAX_CAPACITY); // Initialize semaphore with the maximum capacity
+
+    // Creating threads for cars
+    for (int i = 0; i < MAX_CAPACITY; i++)
+    {
+        car_ids[i] = i + 1;
+        pthread_create(&threads[i], NULL, car_enter, &car_ids[i]);
+        sleep(1); // Simulate cars arriving at different times
+    }
+
+    // Waiting for all threads to finish
+    for (int i = 0; i < MAX_CAPACITY; i++)
+    {
+        pthread_join(threads[i], NULL);
+    }
+
+    sem_destroy(&parking_sem); // Destroy semaphore
+    return 0;
+}
+
+_______________________________________________________________________________________________
+Basic Race condition
+_______________________________________________________________________________________________
+#include <stdio.h>
+#include <pthread.h>
+#include <unistd.h>
+#include <stdlib.h>
+
+int count = 0;
+pthread_mutex_t m;
+
+void *sum(void* arg)
+{
+    int num;
+
+    pthread_mutex_lock(&m);
+    for(int i = 0; i < 100000000000; i++)
+    {
+        num = 1 + rand() % 100;
+        count+=num;
+    }
+    pthread_mutex_unlock(&m);
+}
+
+
+int main()
+{
+    srand(time(NULL));
+    pthread_t p[5];
+
+    pthread_mutex_init(&m,NULL);
+    
+    for(int i = 0; i < 5; i++)
+    {
+        pthread_create(&p[i],NULL,&sum,NULL);
+    }
+
+    for(int i = 0; i < 5; i++)
+    {
+        pthread_join(p[i],NULL);
+    }
+
+
+    pthread_mutex_destroy(&m);
+
+    printf("\n%d",count);
+}
+

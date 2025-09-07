@@ -1,0 +1,150 @@
+========================================================================
+QUESTION # 1:
+======================================================================  
+#! /bin/bash
+i=0
+for i in  {1..10}
+do 
+echo "Welcome to the World of Shell Scripting"
+done
+	
+======================================================================
+QUESTION # 2:
+=====================================================================
+
+#! /bin/bash
+
+
+read -p "Enter your name: " name
+read -p "Enter your degree program: " program
+read -p "Enter your batch no: " batch
+read -p "Enter course title: " title
+
+echo ""
+echo ""
+echo "Name: " $name
+echo "Program: " $program
+echo "Batch: " $batch
+echo "Course: " $title
+
+==========================================================================
+QUESTION # 3:
+=========================================================================
+#! /bin/bash
+
+
+read -p "Enter a number: " num
+if (($num < 0))
+then
+echo "The number is negative"
+else
+echo "The number if positive"
+fi
+
+=========================================================================
+QUESTION # 4:
+=========================================================================
+#! /bin/bash
+
+i=2
+j=0
+read -p "Enter a number: " num
+while(($i<$num))
+do
+if (($num%$i==0))
+then
+j=1
+break
+fi
+((i++))
+done
+
+if [[ j -eq 1 ]]
+then
+echo "The number is a non-prime"
+else
+echo "The number is a prime"
+fi
+
+======================================================================
+QUESTION # 5:
+=====================================================================
+#! /bin/bash
+i=1
+maximum=-999999
+minimum=999999
+while(($i<6))
+do
+read -p "Enter number: " num
+if [[ num -gt maximum ]]
+then
+maximum=$num
+fi
+if [[ num -lt minimum ]]
+then
+minimum=$num
+fi
+((i++))
+done
+
+echo "Maximum number: " $maximum
+echo "Minimum number: " $minimum
+
+
+===================================================================
+QUESTION # 6:
+==================================================================
+
+#! /bin/bash
+i=0
+a=0
+b=1
+
+read -p "Enter the number of terms: " n
+echo $a
+echo $b
+while(($i<$n))
+do
+c=$(($a+$b))
+echo $c
+a=$b
+b=$c
+((i++))
+done
+
+================================================================
+QUESTION # 7:
+================================================================
+
+#! /bin/bash
+
+
+read -p "Enter the number: " n
+ans=1
+i=1
+while(($i<=$n))
+do
+ans=$(($ans * $i))
+((i++))
+done
+
+echo "The factorial of " $n " is: " $ans
+
+
+====================================================================
+QUESTION # 8:
+====================================================================
+
+#! /bin/bash
+
+mv *.sh shelldir
+mv *.c cdir
+mv *.jpg jpgdir
+
+
+
+
+
+
+
+

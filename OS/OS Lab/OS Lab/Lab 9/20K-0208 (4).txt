@@ -1,0 +1,74 @@
+******************************************************************
+QUESTION # 1:
+******************************************************************
+#include<stdio.h>
+#include<unistd.h>
+#include<stdlib.h>
+#include<pthread.h>
+#include<semaphore.h>
+
+int icecreamremaining = 3;
+sem_t give;
+void *handler(void* num){
+	sem_wait(&give);
+	printf("Ice cream given to thread # %d \n",(long)num);
+	icecreamremaining--;
+	sem_post(&give);
+	printf("Thread # %d done eating \n",(long)num);
+	sleep(2);
+	sem_wait(&give);
+	printf("Thread # %d has paid\n",(long)num);
+	sem_post(&give);
+}
+int main(){
+	pthread_t threads[3];
+	sem_init(&give,0,1);
+	for(int i=0;i<3;i++){
+		pthread_create(&threads[i],NULL,handler,(void*)i);
+	}
+	for(int i=0;i<3;i++){
+		pthread_join(threads[i],NULL);	
+	}
+	return 0;
+	
+}
+******************************************************************
+QUESTION # 2:
+******************************************************************
+#include<stdio.h>
+#include<unistd.h>
+#include<stdlib.h>
+#include<pthread.h>
+#include<semaphore.h>
+
+int icecreamremaining = 3;
+sem_t weight,secure,pass;
+void *handler(void* num){
+	printf("Thread # %d has entered\n",(long) num);
+	sem_wait(&weight);
+	printf("Thread # %d is getting the luggage weighed\n",(long)num);
+	sleep(4);
+	sem_post(&weight);
+	sem_wait(&secure);
+	printf("Thread # %d is getting the luggage checked\n",(long)num);
+	sleep(7);
+	sem_post(&secure);
+	sem_wait(&pass);
+	printf("Thread # %d is getting the boarding pass\n",(long)num);
+	sleep(3);
+	sem_post(&pass);
+}
+int main(){
+	pthread_t threads[10];
+	sem_init(&weight,0,1);
+	sem_init(&secure,0,1);
+	sem_init(&pass,0,1);
+	for(int i=0;i<10;i++){
+		pthread_create(&threads[i],NULL,handler,(void*)i);
+	}
+	for(int i=0;i<10;i++){
+		pthread_join(threads[i],NULL);	
+	}
+	return 0;
+	
+}

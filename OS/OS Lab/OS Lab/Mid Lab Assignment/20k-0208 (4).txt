@@ -1,0 +1,176 @@
+****************************************************************************************
+QUESTION # 1
+****************************************************************************************
+#!/bin/bash
+
+sudo mkdir myprograms
+cd myprograms
+
+i=1
+while (($i<1000))
+do 
+x=$i
+x=$(($x*1024))
+sudo fallocate -l $(($x%10240)) file$i.jpg
+sudo fallocate -l $(($x%10240)) file$i.sh
+sudo fallocate -l $(($x%10240)) file$i.c
+((i++))
+done
+
+****************************************************************************************
+QUESTION # 2
+****************************************************************************************
+#!/bin/bash
+
+for f in *.jpg
+do
+sudo mv "$f" "${f%.jpg}.jpeg"
+done
+
+****************************************************************************************
+QUESTION # 3
+****************************************************************************************
+#!/bin/bash
+
+find -size +5k -name "*.sh" | xargs du -sh
+
+****************************************************************************************
+QUESTION # 4
+****************************************************************************************
+#!/bin/bash
+
+sudo mkdir notmyprograms
+cd myprograms
+
+find -name "*.jpeg" -size +10k -exec mv -t /home/notmyprograms/ {} \+
+find -name "*.jpg" -size +10k -exec mv -t /home/notmyprograms/ {} \+
+
+****************************************************************************************
+QUESTION # 5
+****************************************************************************************
+#!/bin/bash
+
+ls -l
+
+****************************************************************************************
+QUESTION # 6
+****************************************************************************************
+#!/bin/bash
+
+for f in *.jpg
+do
+sudo mv "$f" "img_$f"
+done
+
+****************************************************************************************
+QUESTION # 7
+****************************************************************************************
+
+#!/bin/bash
+
+sudo mkdir myexecutables
+for f in *.exe
+do
+sudo mv $f myexecutables/
+done
+
+****************************************************************************************
+QUESTION # 8
+****************************************************************************************
+#!/bin/bash
+
+sudo mkdir cdir
+sudo mkdir shelldir
+sudo mkdir jpgdir
+
+for f in *.c
+do
+sudo mv $f cdir/
+done
+
+for f in *.sh
+do
+sudo mv $f shelldir/
+done
+
+for f in *.jpg
+do
+sudo mv $f jpgdir/
+done
+
+****************************************************************************************
+QUESTION # 9
+****************************************************************************************
+#include<stdio.h>
+#include<sys/types.h>
+#include<wait.h>
+#include<unistd.h>
+#include<stdlib.h>
+
+int main(){
+	int gp = getppid();
+	pid_t wise;
+	wise = fork();
+	if(wise == 0){
+		sleep(1);
+		exit(16);	
+	}else{
+		wait(NULL);
+		printf("Wise son exited\n");
+		pid_t simple;
+		simple = fork();
+		if(simple == 0){
+			system("cat /sys/class/net/enp0s3/address");
+			exit(17);
+		}else{
+			wait(NULL);
+			printf("Simple son exited\n");
+			pid_t wicked;
+			wicked = fork();
+			if(wicked == 0){
+				sleep(7);
+				execl("/bin/date","/bin/date",NULL);
+				exit(20);
+			}else{
+				wait(NULL);
+				printf("Wicked son exited\n");
+				pid_t noidea = fork();
+				if(noidea == 0){
+					printf("GrandParent ID = %d\n",gp);	
+					exit(0);			
+				}else{
+					wait(NULL);
+					printf("Son with no idea exited\n");
+				}
+			}
+		}
+	}
+}
+****************************************************************************************
+QUESTION # 10
+****************************************************************************************
+========================================================================================
+sending.c
+========================================================================================
+#include<stdio.h>
+#include<sys/types.h>
+#include<wait.h>
+#include<unistd.h>
+#include<stdlib.h>
+
+int main(){
+	char fruits[10][100] = {"Apricot","Avocado","Banana","Apple","Blackcurrant","BlackBerry","Carambola","CashewApple","Cherry"};
+	char* args[] = {"/home/myprograms/recieving.sh",fruits[rand()%10],fruits[rand()%10],fruits[rand()%10],fruits[rand()%10],fruits[rand()%10],NULL};
+	execv("/home/myprograms/recieving.sh",args);
+}
+========================================================================================
+recieving.sh
+========================================================================================
+#!/bin/bash
+arr=($1 $2 $3 $4 $5)
+
+
+for ((i = 0; i<5; i++))
+do
+	echo ${arr[i]}
+done | sort

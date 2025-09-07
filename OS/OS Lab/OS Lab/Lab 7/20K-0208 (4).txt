@@ -1,0 +1,185 @@
+******************************************************************
+QUESTION # 1:
+******************************************************************
+#include<stdio.h>
+#include<stdlib.h>
+#include<unistd.h>
+#include<pthread.h>
+#define THREAD_COUNT 3
+
+void *printNum(void *num){
+	long tid;
+	tid = (long)num;
+	printf("Thread %ld\n",tid+1);
+	return 0;
+}
+int main(){
+	pthread_t threads[THREAD_COUNT];
+	int rc;
+	long i;
+	for(i=0;i<THREAD_COUNT;i++){
+		rc = pthread_create(&threads[i],NULL,printNum,(void *)i);
+		pthread_join(threads[i],NULL);
+		if(rc){
+			printf("Error creating Threads.\n");
+			return -1;
+		}else{
+			printf("Thread %ld returns %d\n",i+1,rc);
+		}
+	}
+}
+******************************************************************
+QUESTION # 2:
+******************************************************************
+#include<stdio.h>
+#include<stdlib.h>
+#include<unistd.h>
+#include<pthread.h>
+#define THREAD_COUNT 4
+
+void *printNum(void *num){
+	long table;
+	table = (long)num;
+	long i;
+	printf("Table of %ld\n",table);
+	for(i=1;i<=1000;i++){
+		printf("%ld X %ld = %ld\n",table,i,table*i);	
+	}
+	return 0;
+}
+int main(){
+	pthread_t threads[THREAD_COUNT];
+	int rc;
+	long table = 5;
+	long i;
+	for(i=0;i<THREAD_COUNT;i++){
+		rc = pthread_create(&threads[i],NULL,printNum,(void *)table++);
+		pthread_join(threads[i],NULL);
+	}
+}
+******************************************************************
+QUESTION # 3:
+******************************************************************
+#include<stdio.h>
+#include<stdlib.h>
+#include<unistd.h>
+#include<pthread.h>
+int tc;
+struct data{
+	int threadNum;
+	long iterationNum;
+};
+
+void *printID(void *da){
+	struct data *d = da;
+	printf("Hello from thread %d - I was created in iteration %ld\n",d->threadNum,d->iterationNum+1);
+	free(d);
+	return 0;
+}
+void *mainThread(void* threadID){
+	pthread_t subs[5];
+	long tid = (long)threadID;
+	sleep(1);
+	long j;
+	int rc;
+	for(j=0;j<5;j++){
+		struct data *d = malloc(sizeof(struct data));
+		d->threadNum = tc;
+		d->iterationNum = j;
+		rc = pthread_create(&subs[j],NULL,printID,(void *)d);
+		printf("I am thread %ld. Created new thread (%d) in iteration %ld...\n",tid+1,tc++,j);	
+		pthread_join(subs[j],NULL);	
+	}
+}
+int main(){
+	
+	int rc;
+	long input;
+	printf("Enter the number of threads: ");
+	scanf("%ld",&input);
+	long i,count = 1;
+	pthread_t threads[input];
+	tc = input+1;
+	for(i=0;i<input;i++){
+		rc = pthread_create(&threads[i],NULL,mainThread,(void *)i);
+		pthread_join(threads[i],NULL);
+	}
+}
+******************************************************************
+QUESTION # 4:
+******************************************************************
+#include<stdio.h>
+#include<stdlib.h>
+#include<unistd.h>
+#include<pthread.h>
+int totalSum = 0;
+int array[10] = {1,2,3,4,5,6,7,8,9,10};
+void* halfSum(void* position){
+	long j = (long)position;
+	long i;
+	for(i=0;i<5;i++){
+		totalSum += array[i+j];
+	}
+	return 0;
+}
+int main(){
+	pthread_t th1,th2;
+	long num;
+	int rc;
+	num = 0;
+	rc = pthread_create(&th1,NULL,halfSum,(void *)num);
+	num = 5;
+	rc = pthread_create(&th2,NULL,halfSum,(void *)num);
+	pthread_join(th1,NULL);
+	pthread_join(th2,NULL);
+	printf("The sum of the elements of the array is: %d \n",totalSum);
+}
+******************************************************************
+QUESTION # 5:
+******************************************************************
+#include<stdio.h>
+#include<stdlib.h>
+#include<unistd.h>
+#include<pthread.h>
+#include<time.h>
+int memberCount = 100;
+
+void *registration(void *participantNo){
+	long num = (long) participantNo;
+	printf("Volunteer 1 registered Participant %ld.\n",num);
+	return 0;
+}
+void *announcement(void *participantNo){
+	long num = (long) participantNo;
+	printf("Volunteer 2 made an announcement for Participant %ld\n",num);
+	return 0;
+}
+void *sponsors(void *participantNo){
+	long num = (long) participantNo;
+	printf("Volunteer 3 took Participant %ld as an sponsor\n",num);
+	return 0;
+}
+void *query(void *participantNo){
+	long num = (long) participantNo;
+	printf("Volunteer 4 resolved query for Participant %ld\n",num);
+	return 0;
+}
+int main(){
+	pthread_t services[memberCount];
+	srand(time(0));
+	long i;
+	int rc;
+	for(i=0;i<memberCount;i++){
+		int service = rand() % 4;
+		if (service == 0)
+			rc = pthread_create(&services[i],NULL,registration,(void *)i+1);
+		else if (service == 1)	
+			rc = pthread_create(&services[i],NULL,announcement,(void *)i+1);
+		else if (service == 2)
+			rc = pthread_create(&services[i],NULL,sponsors,(void *)i+1);
+		else
+			rc = pthread_create(&services[i],NULL,query,(void*) i+1);
+		pthread_join(services[i],NULL);	
+	}
+	
+}

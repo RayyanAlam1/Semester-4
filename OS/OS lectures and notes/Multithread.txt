@@ -1,0 +1,58 @@
+#include <pthread.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+#include <time.h>
+
+#define Num 5
+#define arrsize 10
+
+int arr[arrsize];
+int totalSum = 0;
+
+void RandomNum()
+{
+    for(int i = 0; i < arrsize; i++)
+    {
+        arr[i] = 1 + rand() % 100;
+        printf(" %d ",arr[i]);
+    }
+}
+
+void *add(void* arg)
+{
+    int sum = 0;
+    int id = (int)arg;
+    int start = id * (arrsize/Num);
+    int end = start + (arrsize/Num);
+
+    for(int i = start; i < end; i++)
+    {
+        sum+=arr[i];
+    }
+    totalSum+= sum;
+}
+
+int main()
+{
+    srand(time(NULL));
+    void *result;
+    pthread_t p[Num];
+
+    RandomNum();
+
+    for(int i = 0; i < Num; i++)
+    {
+        pthread_create(&p[i],NULL,&add,(void*)i);
+    }
+
+    int ans;
+
+    for(int i = 0; i < Num; i++)
+    {
+        pthread_join(p[i],NULL);
+    }
+
+    printf("Total Sum: %d ", totalSum);
+}   

@@ -1,0 +1,369 @@
+******************************************************************************
+QUESTION # 1:
+******************************************************************************
+#include<stdio.h>
+#include <sys/types.h>
+#include<unistd.h>
+#include<wait.h>
+#include <stdlib.h>
+int main(int argc, char* argv[]){
+int fd[2]; 
+// fd[0] - read 
+// fd[1] - write 
+if (pipe(fd) == -1)
+{ 
+printf("An error ocurred with opening the pipe\n");
+return 1; 
+}
+int id = fork();
+if (id == 0) 
+{ 
+close(fd[0]);
+int x;
+printf("Input a number: ");
+scanf("%d", &x);
+if(write(fd[1], &x, sizeof(int))==-1){
+	printf("Error Occured While Writing");
+	return 2;
+}
+close(fd[1]); 
+} 
+else {
+	
+	close(fd[1]);
+	int y;
+if(read(fd[0],&y,sizeof(int))==-1){
+	
+	printf("Error Occured While reading");
+	return 2;
+}	
+	close(fd[0]);
+	printf("GOT FROM CHILD PROCESS %d \n",y);
+}
+return 0; 
+}
+******************************************************************************
+QUESTION # 2:
+******************************************************************************
+first run the readers then  the writer
+==============================================================================
+WRITER
+==============================================================================
+# include <stdio.h>
+# include <sys/stat.h>
+# include <sys/types.h>
+# include <fcntl.h>
+# include <unistd.h> 
+int main(){
+	int fd,retval;
+	char buffer[20] = "Wahaj Javed";
+	fflush(stdin);
+	retval = mkfifo("/tmp/myfifo",0666);
+	fd = open("/tmp/myfifo",O_WRONLY);
+	write(fd,buffer,sizeof(buffer));
+	write(fd,buffer,sizeof(buffer));
+	write(fd,buffer,sizeof(buffer));
+	close(fd);
+	return 0;
+}
+==============================================================================
+READER 1
+==============================================================================
+# include <sys/stat.h> 
+# include <sys/types.h> 
+# include <fcntl.h> 
+# include <unistd.h>
+# include <stdio.h> 
+int main(){
+	int fd, retval;
+	char buffer[20];
+	fd = open("/tmp/myfifo",O_RDONLY);
+	retval = read(fd,buffer,sizeof(buffer));
+	printf("Reader 1 says: %s \n",buffer);
+	fflush(stdin);
+	close(fd);
+	return 0;
+}
+
+==============================================================================
+READER 2
+==============================================================================
+# include <sys/stat.h> 
+# include <sys/types.h> 
+# include <fcntl.h> 
+# include <unistd.h>
+# include <stdio.h> 
+int main(){
+	int fd, retval;
+	char buffer[20];
+	fd = open("/tmp/myfifo",O_RDONLY);
+	retval = read(fd,buffer,sizeof(buffer));
+	printf("Reader 2 says: %s \n",buffer);
+	fflush(stdin);
+	close(fd);
+	return 0;
+}
+
+==============================================================================
+READER 3
+==============================================================================
+# include <sys/stat.h> 
+# include <sys/types.h> 
+# include <fcntl.h> 
+# include <unistd.h>
+# include <stdio.h> 
+int main(){
+	int fd, retval;
+	char buffer[20];
+	fd = open("/tmp/myfifo",O_RDONLY);
+	retval = read(fd,buffer,sizeof(buffer));
+	printf("Reader 3 says: %s \n",buffer);
+	fflush(stdin);
+	close(fd);
+	return 0;
+}
+
+******************************************************************************
+QUESTION # 3:
+******************************************************************************
+==============================================================================
+server starter
+==============================================================================
+#include<stdio.h>
+#include<stdlib.h>
+#include<sys/shm.h>
+#include<sys/ipc.h>
+#include<sys/types.h>
+#include<unistd.h>
+
+#define MAX_SIZE 1000
+
+int die(char *str){
+	perror(str);
+	return -1;
+}
+int main(void){
+	char message[20];
+	char c;
+	int shmid;
+	key_t key;
+	char *shm;
+	
+	key = 208;
+	if((shmid = shmget(key, MAX_SIZE, IPC_CREAT | 0666))<0){
+		die("shmget");	
+	}
+	if((shm = shmat(shmid, NULL, 0)) == (char *) -1){
+		die("shmat");
+	}
+	printf("Enter a number: ");
+	int n;
+	scanf("%d",&n);
+	*shm++ = n;
+	int i=0;
+	while(*shm!='r'){
+		sleep(1);	
+	}
+	while(message[4] != 'y'){
+		message[i] = *shm++;
+		i++;
+	}
+	printf("The message recieved: %s \n",message);
+	*shm++ = '*';
+	for(int i=0;i<10;i++){
+		while(*shm != '-')sleep(1);
+		shm++;
+		printf("%d\n",*shm);
+		shm++;
+		*shm++ = '*';
+	}
+	
+	exit(0);
+}
+====================================================================================
+side 2 client X server
+====================================================================================
+#include<stdio.h>
+#include<stdlib.h>
+#include<sys/types.h>
+#include<sys/ipc.h>
+#include<sys/shm.h>
+#include<unistd.h>
+
+#define MAX_SIZE 1000
+
+int die(char *str){
+	perror(str);
+	return -1;
+}
+
+int main(void){
+	int shmid;
+	char message[10] = {'r','e','a','d','y'};
+	key_t key;
+	char *shm;
+
+	key = 208;
+	fflush(stdin);
+	if((shmid = shmget(key, MAX_SIZE, IPC_CREAT | 0666))<0){
+		die("shmget");
+	}
+	if((shm = shmat(shmid, NULL, 0)) == (char *) -1){
+		die("shmat");
+	}
+	int num = *shm++;
+	printf("The given number: %d\n",num);
+	for(int i=0;i<5;i++){
+		*shm++ = message[i];
+	}
+	while(*shm != '*'){
+		sleep(1);	
+	}
+	shm++;
+	printf("Starting multiplication\n");
+	for(int i=1;i<=10;i++){
+		*shm++ = '-';
+		*shm++ = num * i;
+		printf("sent\n");
+		while(*shm != '*'){
+			sleep(1);
+		}
+		shm++;
+	}
+	exit(0);
+}
+******************************************************************************
+QUESTION # 4:
+******************************************************************************
+==============================================================================
+A
+==============================================================================
+#include<stdio.h>
+#include<stdlib.h>
+#include<sys/shm.h>
+#include<sys/ipc.h>
+#include<sys/types.h>
+#include<unistd.h>
+
+#define MAX_SIZE 1000
+
+int die(char *str){
+	perror(str);
+	return -1;
+}
+int main(void){
+	int num = 0;
+	char message[20];
+	char c;
+	int shmid;
+	key_t key;
+	char *shm;
+	
+	key = 208;
+	if((shmid = shmget(key, MAX_SIZE, IPC_CREAT | 0666))<0){
+		die("shmget");	
+	}
+	if((shm = shmat(shmid, NULL, 0)) == (char *) -1){
+		die("shmat");
+	}
+	*shm = num;
+	while(*(shm+2) != '*'){
+		sleep(1);
+	}
+	num = *shm;
+	printf("Final state of A: %d\n",num);
+	exit(0);
+}
+==============================================================================
+B
+==============================================================================
+#include<stdio.h>
+#include<stdlib.h>
+#include<sys/shm.h>
+#include<sys/ipc.h>
+#include<sys/types.h>
+#include<unistd.h>
+
+#define MAX_SIZE 1000
+
+int die(char *str){
+	perror(str);
+	return -1;
+}
+int main(void){
+	int num = 1;
+	char message[20];
+	char c;
+	int shmid;
+	key_t key;
+	char *shm;
+	
+	key = 208;
+	if((shmid = shmget(key, MAX_SIZE, IPC_CREAT | 0666))<0){
+		die("shmget");	
+	}
+	if((shm = shmat(shmid, NULL, 0)) == (char *) -1){
+		die("shmat");
+	}
+	shm++;
+	*shm = num;
+	while(*(shm+1) != '*'){
+		sleep(1);
+	}
+	num = *shm;
+	printf("Final state of B: %d\n",num);
+	exit(0);
+}
+==============================================================================
+C
+==============================================================================
+#include<stdio.h>
+#include<stdlib.h>
+#include<sys/shm.h>
+#include<sys/ipc.h>
+#include<sys/types.h>
+#include<unistd.h>
+
+#define MAX_SIZE 1000
+
+int die(char *str){
+	perror(str);
+	return -1;
+}
+int main(void){
+	int num = 0;
+	char message[20];
+	char c;
+	int shmid;
+	key_t key;
+	char *shm;
+	
+	key = 208;
+	if((shmid = shmget(key, MAX_SIZE, IPC_CREAT | 0666))<0){
+		die("shmget");	
+	}
+	if((shm = shmat(shmid, NULL, 0)) == (char *) -1){
+		die("shmat");
+	}
+	int n;
+	printf("Enter the number of iterations: ");
+	scanf("%d",&n);
+	int a = *shm;
+	int b = *(shm+1);
+	printf("%d,%d,",a,b);
+	for(int i=0;i<n;i++){
+		a = *shm;
+		b = *(shm+1);
+		int c = a + b;
+		printf("%d",c);
+		if(i != n-1){
+			printf(",");		
+		}
+		*shm = b;
+		*(shm+1) = c;
+	}
+	shm += 2;
+	*shm = '*';
+	printf("\n");
+	exit(0);
+}

@@ -1,0 +1,112 @@
+******************************************************************
+QUESTION # 1:
+******************************************************************
+#include <stdio.h>
+#include <signal.h>
+#include<wait.h>
+#include<unistd.h>
+
+#define setHandle(sig)				\
+	if(sigaction(sig,&sa,NULL)==SIG_ERR){	\
+		printf("Cant catch\n");		\
+	}
+
+#define checkSignal(sig)			\
+	if(signo==sig){				\
+		puts("recieved " #sig);		\
+		printf("\n");			\
+	}
+
+void handler(int signo){
+	if(signo == 2){
+		printf("SIGUSR1 SIGINT\n");
+	}else if(signo == 23){
+		printf("SIGKILL \n");
+	}else if(signo == 9){
+		printf("SIGSTOP\n");
+	}
+}
+
+int main(){
+	struct sigaction sa; 
+	
+	sa.sa_handler = handler; 
+	
+	while(1){
+		setHandle(SIGINT);
+		setHandle(SIGKILL);
+		setHandle(SIGSTOP);
+		sleep(1);
+	}
+	return 0;
+}
+
+******************************************************************
+QUESTION # 2:
+******************************************************************
+
+#include<stdio.h> 
+#include<unistd.h>
+#include<wait.h>
+#include<signal.h>
+int state=1;
+void signal_handler(int num){
+	 printf("I am here because signalled haha\n");
+	
+}
+ int main()
+ {
+ 	signal(SIGSTOP, signal_handler); 
+ 	signal(SIGKILL, signal_handler);
+	while(1){
+	sleep(1);
+	printf("Process Running \n");
+		}
+	return 0;
+ 	
+ }
+ ******************************************************************
+QUESTION # 3:
+******************************************************************
+ #include<stdio.h>
+#include<stdlib.h>
+#include<unistd.h>
+#include<pthread.h>
+#include<signal.h>
+#include<wait.h>
+#include<semaphore.h>
+sem_t stop;
+int totalSum = 0;
+int array[10] = {1,2,3,4,5,6,7,8,9,10};
+
+void wakeup(){
+	printf("Semaphore is free so ight imma headout\n");
+}
+void* halfSum(void* position){
+
+	long j = (long)position;
+	long i;
+	sem_wait(&stop);
+	for(i=0;i<5;i++){
+		totalSum += array[i+j];
+	}
+	sleep(5);
+	signal(SIGALRM,wakeup);
+	alarm(1);
+	sem_post(&stop);
+	
+}
+int main(){
+	
+	pthread_t th1,th2;
+	sem_init(&stop,0,1);
+	long num;
+	int rc;
+	num = 0;
+	rc = pthread_create(&th1,NULL,halfSum,(void *)num);
+	num = 5;
+	rc = pthread_create(&th2,NULL,halfSum,(void *)num);
+	pthread_join(th1,NULL);
+	pthread_join(th2,NULL);
+	printf("The sum of the elements of the array is: %d \n",totalSum);
+}

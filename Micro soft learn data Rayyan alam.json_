@@ -1,0 +1,125 @@
+{
+  "Progress": null,
+  "VerifiableCredentials": {
+    "docsId": "a2101af0-9a1e-4fc1-93f3-d30369e41fb7",
+    "userCredentials": []
+  },
+  "Lists": null,
+  "NextSteps": null,
+  "Attachments": true,
+  "Certifications": null,
+  "Assessments": null,
+  "Q&A": {
+    "docsId": "a2101af0-9a1e-4fc1-93f3-d30369e41fb7",
+    "questions": [],
+    "answers": [],
+    "comments": []
+  },
+  "XP": {
+    "xp": {
+      "docsId": "a2101af0-9a1e-4fc1-93f3-d30369e41fb7",
+      "totalXp": 0,
+      "currentLevel": 1,
+      "currentLevelLow": 0,
+      "currentLevelHigh": 1799,
+      "currentLevelPointsEarned": 0,
+      "nextLevel": 2,
+      "pointsUntilNextLevel": 1800,
+      "achievementCategories": {
+        "Unknown": 0,
+        "Modules": 0,
+        "Courses": 0,
+        "Qna": 0,
+        "Challenges": 0,
+        "Events": 0,
+        "LearningPaths": 0,
+        "Special": 0
+      }
+    },
+    "achievements": []
+  },
+  "Challenges": null,
+  "TechProfile": {
+    "email": "k224373@nu.edu.pk",
+    "locale": "en-us",
+    "country": "PK",
+    "contactPointTopicSetting": "OptInExplicit",
+    "isInstructor": false,
+    "isChallengeAdmin": false,
+    "isQnaModerator": false,
+    "source": "learn",
+    "authenticationModes": [
+      {
+        "id": "52e1dabf-3ee6-49d9-9901-9f01a9604f7b",
+        "type": "AAD",
+        "tenantId": "a1e3cc4f-47e2-4e32-a7a1-5b14136b160b",
+        "upn": "k224373@nu.edu.pk",
+        "oid": "52e1dabf-3ee6-49d9-9901-9f01a9604f7b",
+        "dateAcceptedPrivacyNotice": "2024-01-26T08:00:53.5647748+00:00",
+        "dateAdded": "2024-01-26T08:00:53.5647748+00:00"
+      },
+      {
+        "id": "0003BFFD5FFC4A71",
+        "type": "MSA",
+        "tenantId": "9188040d-6c67-4c5b-b112-36a304b66dad",
+        "upn": "hafizrayyanalam@gmail.com",
+        "oid": "00000000-0000-0000-d9eb-acea72d2c6bc",
+        "dateAcceptedPrivacyNotice": "2024-01-26T08:02:13.9553685+00:00",
+        "dateAdded": "2024-01-26T08:02:13.9553691+00:00"
+      }
+    ],
+    "transcriptSettings": {
+      "publicLink": {
+        "showModules": true,
+        "showLegalName": true,
+        "showMCID": true,
+        "showContactEmail": true
+      },
+      "print": {
+        "showModules": true,
+        "showLegalName": true,
+        "showMCID": true,
+        "showContactEmail": true
+      }
+    },
+    "certificationSettings": {
+      "print": {
+        "showLegalName": true,
+        "showMCID": true,
+        "showContactEmail": true
+      }
+    },
+    "qnaEmailPreferences": {
+      "allEmail": true,
+      "autoFollowAsked": true,
+      "autoFollowAnswered": true,
+      "autoFollowCommented": true,
+      "autoFollowTagged": false,
+      "emailEventSettings": {
+        "newMention": "instant",
+        "newModeration": "instant",
+        "answerPosted": "instant",
+        "answerAccepted": "instant",
+        "commentPosted": "instant",
+        "newPrivateMessage": "instant",
+        "questionUpdated": "instant",
+        "questionPosted": "instant",
+        "unansweredQuestions": "off",
+        "newFollower": "instant",
+        "answerUpdated": "instant"
+      }
+    },
+    "sharingId": "F06260860BAAE6C2",
+    "userId": "a2101af0-9a1e-4fc1-93f3-d30369e41fb7",
+    "userName": "RayyanAlam-8486",
+    "displayName": "Rayyan Alam",
+    "isPrivate": false,
+    "affiliations": [],
+    "followerCount": 0,
+    "followingCount": 0,
+    "answersAccepted": 0,
+    "reputationPoints": 0,
+    "createdOn": "1/26/2024 8:00:53 AM"
+  },
+  "SkillAssessment": null
+}
